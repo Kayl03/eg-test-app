@@ -14,27 +14,27 @@
 
     // Fetch profile data when the component mounts
     onMount(async () => {
-        try {
-            const res = await fetch('http://localhost/my-php-backend/getProfile.php', {
-    method: 'GET',
-    credentials: 'include',  // Ensure cookies (session) are included in the request
-});
-            if (res.ok) {
-                const data = await res.json();
-                if (data.error) {
-                    console.error('API Error:', data.error);
-                } else {
-                    // Update profile with the fetched data
-                    profile.name = data.name;
-                    profile.username = data.username;
-                }
+    try {
+        const res = await fetch('http://localhost/my-php-backend/getProfile.php', {
+            method: 'GET',
+            credentials: 'include',  // Include the session cookie
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            if (data.error) {
+                console.error('API Error:', data.error);
             } else {
-                console.error('Failed to fetch profile data');
+                profile.name = data.name;
+                profile.username = data.username;
             }
-        } catch (error) {
-            console.error('Fetch error:', error);
+        } else {
+            console.error('Failed to fetch profile data.');
         }
-    });
+    } catch (error) {
+        console.error('Fetch error:', error);
+    }
+});
 </script>
 
 <main class="font-montserratt max-w-[1300px] mx-auto relative">
