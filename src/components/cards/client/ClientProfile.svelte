@@ -4,7 +4,7 @@
 
     let profile = {
         name: '',
-        username: ''
+        email: ''
     };
 
     
@@ -17,21 +17,31 @@
     // Fetch profile data when the component mounts
     onMount(async () => {
     try {
+        console.log('Fetching profile data...');
         const res = await fetch('http://localhost/my-php-backend/getProfile.php', {
             method: 'GET',
-            credentials: 'include',  // Include the session cookie
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json'
+            }
         });
 
+        console.log('Response status:', res.status);
+        
         if (res.ok) {
             const data = await res.json();
+            console.log('Response data:', data);
+            
             if (data.error) {
                 console.error('API Error:', data.error);
             } else {
+                console.log('Setting profile data:', data);
                 profile.name = data.name;
-                profile.username = data.username;
+                profile.email = data.email;
             }
         } else {
-            console.error('Failed to fetch profile data.');
+            const errorData = await res.json().catch(() => ({}));
+            console.error('Failed to fetch profile data:', errorData);
         }
     } catch (error) {
         console.error('Fetch error:', error);
@@ -46,9 +56,11 @@
             <img src={profilePicture} alt="Profile Picture" class="w-full h-full object-cover" />
         </div>
 
-        <!-- Name and Username -->
-        <h1>{profile.name || "Default Name"}</h1>
-        <p>{profile.username || "Default Email"}</p>
+        <!-- Name and Email -->
+        <div class="text-center mb-5">
+            <h1 class="text-2xl font-bold mb-2">{profile.name || "Default Name"}</h1>
+            <p class="text-gray-600">{profile.email || "Default Email"}</p>
+        </div>
 
         <!-- Profile Details -->
         <div class="w-full px-5">
@@ -88,9 +100,9 @@
                 <div class="flex items-center mb-2">
                     <p class="mr-2">Mail:</p>
                     {#if isEditing}
-                        <input type="text" name="mail" bind:value={profile.username} class="text-sm border p-1 rounded w-full" />
+                        <input type="text" name="mail" bind:value={profile.email} class="text-sm border p-1 rounded w-full" />
                     {:else}
-                        <p class="text-sm">{profile.username}</p>
+                        <p class="text-sm">{profile.email}</p>
                     {/if}
                 </div>
 

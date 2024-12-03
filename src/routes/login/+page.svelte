@@ -5,6 +5,7 @@
     import googleIcon from '$lib/assets/login/Google Icon.png';
 
     import { goto } from '$app/navigation';
+    
 
     let email = '';
     let password = '';

@@ -1,32 +1,49 @@
 <?php
-session_set_cookie_params([
-    'lifetime' => 3600,  // 1 hour
-    'path' => '/',       // Allow access to the session from any page on your site
-    'domain' => 'localhost',  // Match your local environment
-    'secure' => false,  // Set to true if using HTTPS
-    'httponly' => true   // Make the session cookie accessible only via HTTP(S)
-]);
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
-// Start the session after setting cookie parameters
-session_start();
+// For development only - handle CORS
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    header('Access-Control-Allow-Origin: http://localhost:5173');
+    header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Accept');
+    header('Access-Control-Allow-Credentials: true');
+    header('Access-Control-Max-Age: 1728000');
+    header('Content-Length: 0');
+    header('Content-Type: text/plain');
+    die();
+}
 
 header('Access-Control-Allow-Origin: http://localhost:5173');
-header('Access-Control-Allow-Credentials: true');  // Allow credentials (cookies)
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Credentials: true');
+header('Content-Type: application/json');
 
+// Set session cookie parameters
+session_set_cookie_params([
+    'lifetime' => 3600,
+    'path' => '/',
+    'domain' => 'localhost',
+    'secure' => false,
+    'httponly' => true
+]);
 
-// Debugging: Log session info to PHP error log to track session status
-error_log('Session data in getProfile.php: ' . print_r($_SESSION, true));
+// Start session
+session_start();
 
-// Check if the user is logged in
+// Debug session info
+error_log("Session ID: " . session_id());
+error_log("Session data: " . print_r($_SESSION, true));
+
+// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    error_log("User not logged in, session ID: " . session_id());
+    error_log("User not logged in. Session data: " . print_r($_SESSION, true));
+    http_response_code(401);
     echo json_encode(["error" => "User not logged in"]);
-    http_response_code(401);  // Unauthorized
     exit();
 }
 
+// Database connection
 $host = 'localhost';
 $dbname = 'Galeria';
 $username = 'root';
@@ -37,21 +54,29 @@ try {
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $userId = $_SESSION['user_id'];
-    $sql = "SELECT CONCAT(first_name, ' ', last_name) AS name, email AS username FROM SERVICEPROVIDER WHERE ServiceProviderID = :user_id";
-    $stmt = $conn->prepare($sql);
+    error_log("Fetching data for user ID: " . $userId);
+    
+    // Fetch user data from the SERVICEPROVIDER table
+    $stmt = $conn->prepare("SELECT first_name, last_name, email FROM SERVICEPROVIDER WHERE ServiceProviderID = :user_id");
     $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
     $stmt->execute();
 
-    if ($stmt->rowCount() > 0) {    
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        echo json_encode($user);
+    if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $response = [
+            "name" => $row['first_name'] . ' ' . $row['last_name'],
+            "email" => $row['email']
+        ];
+        error_log("Found user data: " . print_r($response, true));
+        echo json_encode($response);
     } else {
-        error_log("User not found for user ID: " . $userId);
+        error_log("No user found for ID: " . $userId);
+        http_response_code(404);
         echo json_encode(["error" => "User not found"]);
-        http_response_code(404);  // Not found
     }
+
 } catch (PDOException $e) {
-    error_log("Database connection failed: " . $e->getMessage());
-    echo json_encode(["error" => "Connection failed: " . $e->getMessage()]);
+    error_log("Database error: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(["error" => "Database error: " . $e->getMessage()]);
 }
 ?>
