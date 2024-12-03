@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 $host = 'localhost';
-$dbname = 'Galeria';
+$dbname = 'galeria';
 $username = 'root';  
 $password = 'kylepogi';      // Ensure this is your actual DB password
 

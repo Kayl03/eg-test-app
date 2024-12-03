@@ -6,6 +6,10 @@
   import chat from '$lib/assets/menu/Chat.png';
   import ecreate from '$lib/assets/menu/Ecreate.png';
   import profile from '$lib/assets/menu/Profile.png';
+  import TermsAndConditions from './modals/TermsAndConditions.svelte';
+  import AboutUs from './modals/AboutUs.svelte';
+  let showTermsModal = false;
+  let showAboutModal = false;
 </script>
 
 <style>
@@ -29,8 +33,18 @@
 
   <!-- nav links -->
   <div class="hidden lg:flex lg:absolute lg:top-7 lg:left-5 lg:space-x-6 lg:text-white lg:font-montserratt">
-    <a class="hover:underline cursor-pointer" href="#">About us</a>
-    <a class="hover:underline cursor-pointer" href="#">Terms and Condition</a>
+    <button 
+      class="hover:underline cursor-pointer text-white" 
+      on:click={() => showAboutModal = true}
+    >
+      About us
+    </button>
+    <button 
+      class="hover:underline cursor-pointer text-white" 
+      on:click={() => showTermsModal = true}
+    >
+      Terms and Conditions
+    </button>
   </div>
 
   <!-- menu hamburger -->
@@ -78,3 +92,6 @@
     {/if}
   </div>
 </div>
+
+<TermsAndConditions bind:showModal={showTermsModal} />
+<AboutUs bind:showModal={showAboutModal} />

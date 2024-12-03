@@ -16,9 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Database connection
 $host = 'localhost';
 $port = 4306; // XAMPP MySQL port
-$dbname = 'Galeria';
+$dbname = 'EGDB';
 $db_username = 'root';
-$db_password = 'kylepogi';
+$db_password = 'galeria';
 
 try {
     $conn = new PDO("mysql:host=$host;port=$port;dbname=$dbname", $db_username, $db_password);
