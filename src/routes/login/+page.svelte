@@ -1,4 +1,3 @@
-
 <script lang="ts">
     import backgroundImage from '$lib/assets/login/BG 2 - GREEN.png';
     import fbIcon from '$lib/assets/login/FB Icon.png';
@@ -21,12 +20,12 @@
 
         try {
             const response = await fetch('http://localhost/my-php-backend/Login.php', {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json'
-        },
-            body: JSON.stringify(loginData)
-        });
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(loginData)
+            });
 
             const result = await response.json();
 

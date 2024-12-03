@@ -7,46 +7,39 @@
         email: ''
     };
 
-    
+    // Fetch profile data when the component mounts
+    onMount(async () => {
+        try {
+            console.log('Attempting to fetch profile data...');
+            const response = await fetch('http://localhost/my-php-backend/getProfile.php', {
+                method: 'GET',
+                credentials: 'include',  // Important for sending cookies
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            console.log('Response status:', response.status);
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Received profile data:', data);
+                profile.name = data.name || "Default Name";
+                profile.email = data.email || "Default Email";
+            } else {
+                const errorData = await response.json();
+                console.error('Failed to fetch profile data:', errorData);
+            }
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+        }
+    });
 
     let isEditing = false;
     let showPopup = false;
     let showSuccessMessage = false;
     let showSwitchPopup = false;
-
-    // Fetch profile data when the component mounts
-    onMount(async () => {
-    try {
-        console.log('Fetching profile data...');
-        const res = await fetch('http://localhost/my-php-backend/getProfile.php', {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
-
-        console.log('Response status:', res.status);
-        
-        if (res.ok) {
-            const data = await res.json();
-            console.log('Response data:', data);
-            
-            if (data.error) {
-                console.error('API Error:', data.error);
-            } else {
-                console.log('Setting profile data:', data);
-                profile.name = data.name;
-                profile.email = data.email;
-            }
-        } else {
-            const errorData = await res.json().catch(() => ({}));
-            console.error('Failed to fetch profile data:', errorData);
-        }
-    } catch (error) {
-        console.error('Fetch error:', error);
-    }
-});
 </script>
 
 <main class="font-montserratt max-w-[1300px] mx-auto relative">
