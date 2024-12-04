@@ -51,8 +51,8 @@
 
         <!-- Name and Email -->
         <div class="text-center mb-5">
-            <h1 class="text-2xl font-bold mb-2">{profile.name || "Default Name"}</h1>
-            <p class="text-gray-600">{profile.email || "Default Email"}</p>
+            <h1 class="text-2xl font-bold mb-2">{profile.name }</h1>
+            <p class="text-gray-600">{profile.email}</p>
         </div>
 
         <!-- Profile Details -->
