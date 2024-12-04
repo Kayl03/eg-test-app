@@ -93,4 +93,3 @@ error_log("Parameters: " . json_encode($params));
 // Execute the statement with the parameters
 
 // Return the results in JSON format
-

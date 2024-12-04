@@ -60,19 +60,19 @@
         <!-- Subcategory Boxes -->
         <section class="grid grid-cols-3 gap-8 p-4 mt-10 max-w-6xl mx-auto">
             {#each categories as category}
-                <button 
+                <div 
+                    class="relative w-[300px] h-[200px] rounded-lg overflow-hidden cursor-pointer"
                     on:click={() => openCategoryModal(category.name)}
-                    class="bg-white rounded-lg shadow-lg flex flex-col items-center justify-center transform transition-transform duration-300 hover:scale-105 w-full h-[200px] relative"
                 >
                     <img 
                         src={category.image} 
                         alt={category.name} 
-                        class="w-full h-full object-cover rounded-lg opacity-70 transition-opacity duration-300 hover:opacity-90" 
+                        class="w-full h-full object-cover object-center rounded-lg opacity-90 transition-opacity duration-300 hover:opacity-90" 
                     />
                     <p class="absolute bottom-0 left-0 right-0 text-center bg-black bg-opacity-50 text-white py-2 rounded-b-lg">
                         {category.name}
                     </p>
-                </button>
+                </div>
             {/each}
         </section>
     </main>
@@ -82,19 +82,12 @@
             <p>Never run out of options</p>
             <h2 class="text-3xl font-bold">El Galeria is always updated</h2>
             <p>Browse through our wide variety of artists and build the best team for your events.</p>
-        </div>
-    </section>
-
-    <section class="flex items-center justify-center bg-gray-200">
-        <div class="flex flex-col items-center justify-center w-[1400px] h-[250px] bg-custom text-white font-bold rounded-lg shadow-lg mb-10">
-            <p class="text-5xl">Freelance services at your fingertips!</p>
-            <a href="/ecreate">
-            <button class="mt-6 px-4 py-2 bg-gray-600  text-2xl text-white rounded-lg hover:bg-green-800">
+            <a href="/ecreate"><button class="mt-6 px-4 py-2 bg-gray-600  text-2xl text-white rounded-lg hover:bg-green-800">
                 Browse More
             </button></a>
-
         </div>
     </section>
+
         
     <TopServiceProvidersModal 
         bind:isOpen={isModalOpen} 

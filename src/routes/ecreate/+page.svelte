@@ -1,16 +1,20 @@
 <script lang="ts">
-    // Existing script remains unchanged
     import HomepageNavbar from "../../components/HomepageNavbar.svelte";
     import { openPopup } from '../../stores/Addteam';
     import AddTeam from '../../components/pupUps/AddTeam.svelte';
+    import { onMount } from 'svelte';
 
     interface SearchResult {
-        FIRSTNAME: string;
-        LASTNAME: string;
-        BIO: string;
-        RATING: number;
-        SNAME: string[];
-        ProfileImg?: string;
+        ServicesID: number;
+        SName: string;
+        SPrice: number;
+        first_name: string;
+        last_name: string;
+        email: string;
+        ContactNum: string;
+        CategName: string;
+        Rating: number;
+        Feedback: string;
     }
 
     let minPrice = 0;
@@ -36,16 +40,17 @@
 
         isLoading = true;
         try {
-            const requestBody: any = { searchTerm };
-            if (minPrice > 0) requestBody.minPrice = minPrice;
-            if (maxPrice < 10000) requestBody.maxPrice = maxPrice;
-            if (selectedCategories.length > 0) requestBody.category = selectedCategories;
-            if (minRating > 0) requestBody.minRating = minRating;
+            // Build the query parameters
+            const params = new URLSearchParams();
+            if (searchTerm) params.append('search', searchTerm);
+            if (minPrice > 0) params.append('minPrice', minPrice.toString());
+            if (maxPrice < 10000) params.append('maxPrice', maxPrice.toString());
+            if (selectedCategories.length > 0) params.append('category', selectedCategories[0]); // API supports one category at a time
+            if (minRating > 0) params.append('rating', minRating.toString());
 
-            const response = await fetch('http://localhost/my-php-backend/ecreate.php', {
-                method: 'POST',
+            const response = await fetch(`http://localhost/my-php-backend/searchServices.php`, {
+                method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody),
             });
 
             if (!response.ok) {
@@ -54,26 +59,13 @@
             }
 
             const data = await response.json();
-            if (data.message) {
-                console.warn('No results found:', data.message);
+            if (!data.success) {
+                console.warn('Search failed:', data.message);
                 searchResults = [];
                 return;
             }
 
-            if (!Array.isArray(data)) {
-                console.error('Expected an array but got:', data);
-                return;
-            }
-
-            searchResults = data.map(item => ({
-                FIRSTNAME: item.FIRSTNAME, 
-                LASTNAME: item.LASTNAME, 
-                BIO: item.BIO, 
-                RATING: item.RATING !== null ? item.RATING : 0,
-                SNAME: item.SNAME ? item.SNAME.split(',') : [],
-                ProfileImg: item.ProfileImg
-            }));
-
+            searchResults = data.data;
             console.log('Updated Search Results:', searchResults);
         } catch (error) {
             console.error('Error fetching services:', error);
@@ -81,7 +73,12 @@
             isLoading = false;
         }
     }
+
+    onMount(() => {
+        searchServices();
+    });
 </script>
+
 
 <main class="bg-gray-200 min-h-screen font-montserrat">
     <HomepageNavbar />
@@ -96,7 +93,11 @@
                 
                 <label for="max-price" class="text-lg font-semibold">Max Price</label>
                 <input type="number" id="max-price" placeholder="Max" class="border rounded p-2 w-full" bind:value={maxPrice} />
+                <button class="bg-custom text-white py-2 px-2 rounded w-full sm:w-40" on:click={searchServices}>
+                    Apply
+                </button>
             </div>
+
 
             <!-- Categories -->
             <div class="space-y-4">
@@ -105,7 +106,7 @@
                 <div class="space-y-2">
                     <h4 class="font-semibold">By Category</h4>
                     <div class="space-y-1">
-                        {#each ['Music & Audio', 'Graphics & Design', 'Catering Services', 'Gowns & Suits', 'Photo & Video Production', 'Entertainment & Activities', 'Make-Up Artists', 'Event Lighting', 'Bartending'] as cat}
+                        {#each ['Audio Services', 'Design & Print', 'Food & Beverage', 'Clothing Services', 'Photography & Video', 'Entertainment', 'Beauty Services', 'Lighting', 'Beverage Services'] as cat}
                         <label class="flex items-center">
                             <input type="checkbox" class="mr-2" name="category" on:change={() => toggleCategory(cat)} />
                             {cat}
@@ -127,7 +128,9 @@
                     </div>
                 </div>
             </div>
+
         </aside>
+
 
         <!-- Main Content -->
         <div class="flex-1 p-4">
@@ -142,17 +145,32 @@
                         </a>
                     </button>
 
+
                     <!-- Search Bar -->
                     <div class="flex flex-col flex-grow">
                         <label for="search-term" class="text-sm font-semibold">Search</label>
-                        <input type="text" id="search-term" placeholder="Search for services..." class="border rounded p-2 flex-grow min-w-[200px]" bind:value={searchTerm} />
+                        <div class="flex">
+                            <input 
+                                type="text" 
+                                id="search-term" 
+                                placeholder="Search for services..." 
+                                class="border rounded-l p-2 flex-grow min-w-[200px]" 
+                                bind:value={searchTerm}
+                                on:keypress={(e) => e.key === 'Enter' && searchServices()} 
+                            />
+                            <button 
+                                class="bg-custom text-white px-4 rounded-r"
+                                on:click={searchServices}
+                            >
+                                Search
+                            </button>
+                        </div>
+
                     </div>
 
                     <!-- Apply Filters Button -->
                     <div class="flex justify-center">
-                        <button class="bg-custom text-white py-2 px-2 rounded w-full sm:w-40" on:click={searchServices}>
-                            Apply
-                        </button>
+                        
                     </div>
                 </div>
 
@@ -166,37 +184,23 @@
                     {#if isLoading}
                         <p>Loading results...</p>
                     {:else if searchResults && searchResults.length > 0}
-                        {#each searchResults as { FIRSTNAME, LASTNAME, BIO, RATING, SNAME, ProfileImg }}
-                            <div class="bg-white border rounded-lg shadow-md max-w-sm">
-                                <div class="p-2">
-                                    <div class="relative w-82 h-80 overflow-hidden rounded-lg">
-                                        <img src={ProfileImg} alt="{FIRSTNAME} {LASTNAME}" class="w-full h-full object-cover rounded-lg" />
-                                    </div>
-
-                                    <div class="flex items-center mt-2">
-                                        <h4 class="font-semibold text-lg flex-grow">{FIRSTNAME} {LASTNAME}</h4>
-                                        <span class="flex items-center text-yellow-500">
-                                            {'★'.repeat(Math.round(RATING)) + '☆'.repeat(5 - Math.round(RATING))}
-                                            <span class="text-gray-500 ml-1">{RATING.toFixed(1)}</span>
-                                        </span>
-                                    </div>
-
-                                    <div class="flex space-x-2 mt-2">
-                                        {#each SNAME as SERVICE}
-                                            <span class="bg-green-500 text-white text-xs py-1 px-2 rounded">{SERVICE}</span>
-                                            
-                                        {/each}
-                                    </div>
-
-                                    <p class="mt-2 text-gray-600">{BIO}</p>
-
-                                    <div class="flex space-x-10 mt-4 items-center justify-center mb-2">
-                                        <a href="/profile/{FIRSTNAME}-{LASTNAME}">
-                                            <button class="bg-green-800 text-white py-2 px-8 rounded-lg">Visit Profile</button>
-                                        </a>
-                                        <button class="bg-green-800 text-white py-2 px-8 rounded-lg" on:click={openPopup}>Add to Team</button>
-                                    </div>
-                                    <AddTeam />
+                        {#each searchResults as result}
+                            <div class="bg-white rounded-lg shadow-md p-4">
+                                <h3 class="text-xl font-semibold">{result.SName}</h3>
+                                <p class="text-gray-600">₱{result.SPrice}</p>
+                                <p class="text-sm text-gray-500">Provider: {result.first_name} {result.last_name}</p>
+                                <p class="text-sm text-gray-500">Category: {result.CategName}</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="text-yellow-500">★</span>
+                                    <span class="ml-1">{result.Rating.toFixed(1)}</span>
+                                </div>
+                                {#if result.Feedback}
+                                    <p class="text-sm text-gray-600 mt-2">"{result.Feedback}"</p>
+                                {/if}
+                                <div class="mt-2">
+                                    <a href="mailto:{result.email}" class="text-blue-500 hover:text-blue-700 text-sm">
+                                        Contact: {result.ContactNum}
+                                    </a>
                                 </div>
                             </div>
                         {/each}
@@ -207,4 +211,5 @@
             </section>
         </div>
     </div>
+
 </main>

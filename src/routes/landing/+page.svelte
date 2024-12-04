@@ -11,7 +11,7 @@
    </div> 
     <div class="space-x-4 text-center">
         <button  class="font-montserratt px-6 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800">
-            <a href="/signup">Sign Up</a>
+            <a href="/signup/client">Sign Up</a>
         </button>
 
         <button  class="font-montserratt px-6 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800">

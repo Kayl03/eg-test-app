@@ -1,8 +1,9 @@
 <?php
-// Allow requests from any origin (adjust for production)
-header('Access-Control-Allow-Origin: *');
+// Allow requests from frontend origin
+header('Access-Control-Allow-Origin: http://localhost:5173');
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Credentials: true');
 header('Content-Type: application/json');
 // Start session
 session_start();
@@ -16,9 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Database connection
 $host = 'localhost';
 $port = 4306; // XAMPP MySQL port
-$dbname = 'EGDB';
+$dbname = 'Galeria';
 $db_username = 'root';
-$db_password = 'galeria';
+$db_password = 'kylepogi';
 
 try {
     $conn = new PDO("mysql:host=$host;port=$port;dbname=$dbname", $db_username, $db_password);
@@ -46,21 +47,29 @@ try {
         
         // Check if user exists and password matches
         if ($user && password_verify($password, $user['password'])) {
-            // Determine which table the user is from
-            $isServiceProvider = isset($user['ServiceProviderID']);
-            
-            // Set session variables after successful login
-            $_SESSION['user_id'] = $isServiceProvider ? $user['ServiceProviderID'] : $user['ClientID'];
-            $_SESSION['name'] = $user['first_name'] . ' ' . $user['last_name'];
+            // Set session variables
+            $_SESSION['user_id'] = $user['ServiceProviderID'] ?? $user['ClientID'];
             $_SESSION['email'] = $user['email'];
-            echo json_encode(["message" => "Login successful!", "redirect" => "/homepage"]);
+            $_SESSION['user_type'] = isset($user['ServiceProviderID']) ? 'provider' : 'client';
+            
+            // Return success response with user type
+            echo json_encode([
+                "success" => true,
+                "message" => "Login successful",
+                "user_type" => $_SESSION['user_type']
+            ]);
         } else {
-            echo json_encode(["error" => "Invalid email or password."]);
+            http_response_code(401);
+            echo json_encode([
+                "success" => false,
+                "message" => "Invalid email or password"
+            ]);
         }
-        
     }
-} catch (PDOException $e) {
-    // Handle connection failure
-    echo json_encode(["error" => "Connection failed: " . $e->getMessage()]);
+} catch(PDOException $e) {
+    http_response_code(500);
+    echo json_encode([
+        "success" => false,
+        "message" => "Database error: " . $e->getMessage()
+    ]);
 }
-?>
